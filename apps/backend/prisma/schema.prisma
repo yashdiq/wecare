@@ -1,0 +1,85 @@
+// apps/backend/prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+// this only generated once
+// generator nestjsDto {
+//   provider                        = "prisma-generator-nestjs-dto"
+//   output                          = "../libs/shared/src/prisma"
+//   outputToNestJsResourceStructure = "true"
+//   exportRelationModifierClasses   = "true"
+//   reExport                        = "false"
+//   createDtoPrefix                 = "Create"
+//   updateDtoPrefix                 = "Update"
+//   dtoSuffix                       = "Dto"
+//   entityPrefix                    = ""
+//   entitySuffix                    = ""
+//   fileNamingStyle                 = "camel"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CAREGIVER
+  SUPERUSER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role
+  shifts    Shift[]
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("users")
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  shifts    Shift[]
+  createdAt DateTime @default(now())
+
+  @@index([name])
+  @@map("clients")
+}
+
+model Shift {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  client    Client   @relation(fields: [clientId], references: [id])
+  clientId  Int
+  caregiver User     @relation(fields: [userId], references: [id])
+  userId    Int
+  visits    Visit[]
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([date])
+  @@map("shifts")
+}
+
+model Visit {
+  id        Int      @id @default(autoincrement())
+  type      String // "START" or "END"
+  timestamp DateTime
+  latitude  Float
+  longitude Float
+  shift     Shift    @relation(fields: [shiftId], references: [id])
+  shiftId   Int
+  createdAt DateTime @default(now())
+
+  @@index([shiftId])
+  @@index([timestamp])
+  @@map("visits")
+}
