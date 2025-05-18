@@ -1,0 +1,76 @@
+services:
+  api-gateway:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+    command: >
+      sh -c "wait-for-it db:5432 -t 60 -- echo 'Database is up' &&
+             npx prisma migrate deploy &&
+             npx prisma db seed &&
+             npm run start:dev api-gateway"
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+
+  shift-service:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      - JWT_SECRET=WECARE_$2b$10$52yMT.v7Py/TxUIHiG5X7OT9xbDU8imZ0VDwNWBaHidinJ/aNKme2
+      - SHIFT=0.0.0.0
+      - HOST=0.0.0.0
+    command: >
+      sh -c "wait-for-it db:5432 -t 60 -- echo 'Database is up' &&
+             npx prisma migrate deploy &&
+             npm run start:dev shift"
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+
+  visit-service:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=true
+      - LOG_LEVEL=debug
+      - JWT_SECRET=WECARE_$2b$10$52yMT.v7Py/TxUIHiG5X7OT9xbDU8imZ0VDwNWBaHidinJ/aNKme2
+      - VISIT=0.0.0.0
+      - HOST=0.0.0.0
+    command: >
+      sh -c "wait-for-it db:5432 -t 60 -- echo 'Database is up' &&
+             npx prisma migrate deploy &&
+             npm run start:dev visit"
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
+
+  frontend:
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+
+  # Add pgadmin for database management during development
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: wecare-pgadmin
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@wecare.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_LISTEN_PORT=5050
+    ports:
+      - "5050:5050"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - wecare-network
+
+volumes:
+  pgadmin_data:
+    driver: local

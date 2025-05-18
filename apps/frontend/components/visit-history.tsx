@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MapPreview } from "@/components/ui/map-preview";
 import { formatDate, formatTimestamp } from "@/lib/utils";
@@ -11,9 +17,9 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export function VisitHistory() {
-  const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
+  const [expandedVisit, setExpandedVisit] = useState<number | null>(null);
 
-  const toggleVisit = (shiftId: string) => {
+  const toggleVisit = (shiftId: number) => {
     setExpandedVisit(expandedVisit === shiftId ? null : shiftId);
   };
 
@@ -21,9 +27,7 @@ export function VisitHistory() {
     <Card>
       <CardHeader>
         <CardTitle>Visit History</CardTitle>
-        <CardDescription>
-          Previous visit logs and locations
-        </CardDescription>
+        <CardDescription>Previous visit logs and locations</CardDescription>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[500px] pr-4">
@@ -43,16 +47,22 @@ export function VisitHistory() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium">
-                        {formatDate(new Date(visit.startLog!.timestamp).toISOString().split('T')[0])}
+                        {formatDate(
+                          new Date(visit.startLog!.timestamp)
+                            .toISOString()
+                            .split("T")[0]
+                        )}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {formatTimestamp(visit.startLog!.timestamp)} - {formatTimestamp(visit.endLog!.timestamp)}
+                        {formatTimestamp(visit.startLog!.timestamp)} -{" "}
+                        {formatTimestamp(visit.endLog!.timestamp)}
                       </p>
                     </div>
                     <ChevronDown
                       className={cn(
                         "h-5 w-5 text-muted-foreground transition-transform",
-                        expandedVisit === visit.shiftId && "transform rotate-180"
+                        expandedVisit === visit.shiftId &&
+                          "transform rotate-180"
                       )}
                     />
                   </div>
@@ -72,15 +82,21 @@ export function VisitHistory() {
                           <User className="h-4 w-4 mt-1" />
                           <div>
                             <h4 className="text-sm font-medium">Client</h4>
-                            <p className="text-sm text-muted-foreground">{visit.client.name}</p>
-                            <p className="text-sm text-muted-foreground">{visit.client.address}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {visit.client.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {visit.client.address}
+                            </p>
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 mr-2" />
-                            <span className="text-sm font-medium">Location</span>
+                            <span className="text-sm font-medium">
+                              Location
+                            </span>
                           </div>
                           <MapPreview
                             location={visit.startLog!.location}
@@ -89,7 +105,15 @@ export function VisitHistory() {
                         </div>
 
                         <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border">
-                          <span>Duration: {Math.round((visit.endLog!.timestamp - visit.startLog!.timestamp) / 60000)} minutes</span>
+                          <span>
+                            Duration:{" "}
+                            {Math.round(
+                              (visit.endLog!.timestamp -
+                                visit.startLog!.timestamp) /
+                                60000
+                            )}{" "}
+                            minutes
+                          </span>
                           <span className="text-xs">ID: {visit.shiftId}</span>
                         </div>
                       </div>

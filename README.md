@@ -32,7 +32,7 @@ WeCare uses a microservices architecture:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:yashdiq/wecare.git
 cd wecare
 ```
 
