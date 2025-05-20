@@ -3,6 +3,16 @@ FROM node:20-alpine AS deps
 
 WORKDIR /app
 
+# Install necessary build tools
+RUN apk add --no-cache libc6-compat python3 make g++ git
+
+# Set npm configuration for better reliability
+ENV npm_config_registry=https://registry.npmjs.org/
+ENV npm_config_fetch_timeout=600000
+ENV npm_config_fetch_retry_mintimeout=20000
+ENV npm_config_fetch_retry_maxtimeout=120000
+ENV npm_config_network_timeout=300000
+
 # Copy package.json files
 COPY package.json ./
 COPY next.config.js ./
@@ -11,9 +21,8 @@ COPY components.json ./
 COPY postcss.config.js ./
 COPY tailwind.config.ts ./
 
-# Install dependencies
-RUN apk add --no-cache libc6-compat && \
-    npm install
+# Install dependencies with verbose logging
+RUN npm install --no-audit --verbose --maxsockets=5 --unsafe-perm=true
 
 # Second stage: Builder
 FROM node:20-alpine AS builder

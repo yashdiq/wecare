@@ -6,6 +6,22 @@
 APP_NAME=${APP_NAME:-"unknown"}
 echo "Starting $APP_NAME service..."
 
+# Check for node_modules
+if [ ! -d "/app/node_modules" ]; then
+  echo "ERROR: node_modules directory not found!"
+  echo "This indicates the npm install process failed during the build."
+  echo "Please check the Docker build logs for more information."
+  exit 1
+fi
+
+# Basic node_modules validation for critical packages
+if [ ! -d "/app/node_modules/@nestjs" ]; then
+  echo "ERROR: NestJS packages not found in node_modules!"
+  echo "The npm install process may have partially failed."
+  echo "Please rebuild the Docker image with better logging."
+  exit 1
+fi
+
 # Check if JWT_SECRET is set
 if [ -z "$JWT_SECRET" ]; then
   echo "ERROR: JWT_SECRET environment variable is not set!"

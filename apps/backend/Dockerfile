@@ -6,15 +6,26 @@ ARG APP_NAME=api-gateway
 
 WORKDIR /app
 
-# Copy necessary files
+# Install necessary build tools and increase npm timeout
+RUN apk add --no-cache python3 make g++ git
+# Increase npm timeout and set registry to official npm
+ENV npm_config_registry=https://registry.npmjs.org/
+ENV npm_config_fetch_timeout=600000
+ENV npm_config_fetch_retry_mintimeout=20000
+ENV npm_config_fetch_retry_maxtimeout=120000
+ENV npm_config_network_timeout=300000
+
+# Copy package.json first to leverage Docker caching
 COPY package.json ./
+
+# Install dependencies with verbose logging and increased memory
+RUN npm install --no-audit --verbose --maxsockets=5 --unsafe-perm=true
+
+# Copy the rest of the application
 COPY prisma ./prisma/
 COPY apps ./apps/
 COPY libs ./libs/
 COPY nest-cli.json tsconfig.json tsconfig.build.json ./
-
-# Install dependencies
-RUN npm install
 
 # Generate Prisma client
 RUN npx prisma generate
