@@ -1,7 +1,8 @@
 import { useAuth } from "./auth";
 import { LoginResponse } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// Default to API gateway URL if environment variable is not set
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://8.219.89.94:4200";
 
 export async function loginUser(
   email: string,

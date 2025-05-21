@@ -46,8 +46,10 @@ COPY lib ./lib
 # Create public directory
 RUN mkdir -p ./public
 
-# Set environment variable for Next.js to build without telemetry
+# Set environment variables
 ENV NEXT_TELEMETRY_DISABLED 1
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Build the app (without turbopack in Docker)
 RUN npm run build -- --no-lint
@@ -59,6 +61,8 @@ WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Copy the necessary files from the builder
 COPY --from=builder /app/.next ./.next

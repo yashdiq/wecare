@@ -1,138 +1,76 @@
 services:
-  db:
-    image: postgres:15
-    container_name: wecare-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: wecare
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./apps/backend/prisma:/app/prisma:ro
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - wecare-network
-
   api-gateway:
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-      args:
-        - APP_NAME=api-gateway
+    image: wecare-api-gateway
     container_name: wecare-api-gateway
     restart: always
+    entrypoint: []
+    command: sh -c "node /app/dist/apps/api-gateway/main.js"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/wecare?schema=public&connect_timeout=300
+      - DATABASE_URL=postgresql://linkupp:Linkupp2024!@pgm-gs5p081lmu5uty2qio.pgsql.singapore.rds.aliyuncs.com:5432/wecare?schema=public
       - DATABASE_RETRY_ATTEMPTS=5
       - DATABASE_RETRY_DELAY=5000
       - JWT_SECRET=WECARE_$2b$10$52yMT.v7Py/TxUIHiG5X7OT9xbDU8imZ0VDwNWBaHidinJ/aNKme2
       - SHIFT_SERVICE_HOST=shift-service
       - VISIT_SERVICE_HOST=visit-service
       - PORT=4200
-    volumes:
-      - ./apps/backend/apps/api-gateway:/app/apps/api-gateway:ro
-      - ./apps/backend/libs:/app/libs:ro
-      - ./apps/backend/prisma:/app/prisma:ro
     ports:
       - "4200:4200"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - wecare-network
 
   shift-service:
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-      args:
-        - APP_NAME=shift
+    image: wecare-shift-service
     container_name: wecare-shift-service
     restart: always
+    entrypoint: []
+    command: sh -c "node /app/dist/apps/shift/main.js"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/wecare?schema=public&connect_timeout=300
+      - DATABASE_URL=postgresql://linkupp:Linkupp2024!@pgm-gs5p081lmu5uty2qio.pgsql.singapore.rds.aliyuncs.com:5432/wecare?schema=public
       - DATABASE_RETRY_ATTEMPTS=5
       - DATABASE_RETRY_DELAY=5000
       - JWT_SECRET=WECARE_$2b$10$52yMT.v7Py/TxUIHiG5X7OT9xbDU8imZ0VDwNWBaHidinJ/aNKme2
       - PORT=4201
       - SHIFT=0.0.0.0
       - HOST=0.0.0.0
-    volumes:
-      - ./apps/backend/apps/shift:/app/apps/shift:ro
-      - ./apps/backend/libs:/app/libs:ro
-      - ./apps/backend/prisma:/app/prisma:ro
     ports:
       - "4201:4201"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - wecare-network
 
   visit-service:
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-      args:
-        - APP_NAME=visit
+    image: wecare-visit-service
     container_name: wecare-visit-service
     restart: always
+    entrypoint: []
+    command: sh -c "node /app/dist/apps/visit/main.js"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/wecare?schema=public&connect_timeout=300
+      - DATABASE_URL=postgresql://linkupp:Linkupp2024!@pgm-gs5p081lmu5uty2qio.pgsql.singapore.rds.aliyuncs.com:5432/wecare?schema=public
       - DATABASE_RETRY_ATTEMPTS=5
       - DATABASE_RETRY_DELAY=5000
       - JWT_SECRET=WECARE_$2b$10$52yMT.v7Py/TxUIHiG5X7OT9xbDU8imZ0VDwNWBaHidinJ/aNKme2
       - PORT=4202
       - VISIT=0.0.0.0
       - HOST=0.0.0.0
-    volumes:
-      - ./apps/backend/apps/visit:/app/apps/visit:ro
-      - ./apps/backend/libs:/app/libs:ro
-      - ./apps/backend/prisma:/app/prisma:ro
     ports:
       - "4202:4202"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - wecare-network
 
   frontend:
-    build:
-      context: ./apps/frontend
-      dockerfile: Dockerfile
+    image: wecare-frontend
     container_name: wecare-frontend
     restart: always
     environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:4200
-    volumes:
-      - ./apps/frontend/app:/app/app:ro
-      - ./apps/frontend/components:/app/components:ro
-      - ./apps/frontend/hooks:/app/hooks:ro
-      - ./apps/frontend/lib:/app/lib:ro
-      - ./apps/frontend/public:/app/public:ro
+      - NEXT_PUBLIC_API_URL=http://8.219.89.94:4200
     ports:
       - "3000:3000"
     depends_on:
       - api-gateway
     networks:
       - wecare-network
-
-volumes:
-  postgres_data:
-    driver: local
 
 networks:
   wecare-network:
